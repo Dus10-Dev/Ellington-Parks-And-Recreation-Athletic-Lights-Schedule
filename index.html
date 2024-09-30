@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellington Athletic Field Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+
+        .schedule-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .filter {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #lastUpdated {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ellington Athletic Field Schedule</h1>
+</header>
+
+<div class="container">
+    <h2>Check the latest schedule for our athletic fields</h2>
+    <p>The latest schedule is displayed below:</p>
+
+    <!-- Last Updated Date -->
+    <div id="lastUpdated"></div>
+
+    <!-- Filter Dropdown -->
+    <div class="filter">
+        <label for="facilityFilter">Filter by Facility:</label>
+        <select id="facilityFilter" onchange="filterSchedule()">
+            <option value="">All</option>
+            <option value="Ellington High School">Ellington High School</option>
+            <option value="Another Facility">Another Facility</option>
+            <!-- Add more options as needed -->
+        </select>
+    </div>
+
+    <!-- Schedule Table -->
+    <table class="schedule-table" id="scheduleTable">
+        <thead>
+            <tr>
+                <th>Facility</th>
+                <th>Field</th>
+                <th>Start Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody id="scheduleBody">
+            <!-- Dynamic schedule data will be inserted here -->
+        </tbody>
+    </table>
+
+    <p id="error-message" style="color: red;"></p> <!-- For displaying any error messages -->
+</div>
+
+<footer>
+    <p>Want to update the schedule? Ensure the latest CSV file is uploaded.</p>
+</footer>
+
+<!-- JavaScript to load CSV file and filter the schedule -->
+<script>
+    const lastUpdatedDate = "2024-09-30"; // Update this date when the schedule is updated
+
+    // This function reads the CSV file and updates the schedule table
+    function loadCSVSchedule() {
+        fetch('schedule.csv?v=' + new Date().getTime())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(data => {
+                const scheduleBody = document.getElementById('scheduleBody');
+                const errorMessage = document.getElementById('error-message');
+                scheduleBody.innerHTML = ''; // Clear existing rows
+                errorMessage.innerHTML = ''; // Clear existing error messages
+
+                const rows = data.split('\n').slice(1); // Split by new lines and skip the header row
+                if (rows.length === 0 || (rows.length === 1 && rows[0] === '')) {
+                    errorMessage.innerHTML = 'No schedule data found in the CSV file.';
+                    return;
+                }
+                rows.forEach(row => {
+                    if (row) {
+                        const cols = row.split(','); // Split by comma to get columns
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${cols[0]}</td><td>${cols[1]}</td><td>${cols[2]}</td><td>${cols[3]}</td><td>${cols[4]}</td>`;
+                        scheduleBody.appendChild(tr);
+                    }
+                });
+
+                // Update last updated date in header
+                document.getElementById('lastUpdated').innerText = 'Last Updated: ' + lastUpdatedDate;
+            })
+            .catch(error => {
+                console.error('Error loading CSV file:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.innerHTML = 'Error loading schedule: ' + error.message;
+            });
+    }
+
+    // Function to filter the schedule based on selected facility
+    function filterSchedule() {
+        const filterValue = document.getElementById('facilityFilter').value.toLowerCase();
+        const rows = document.querySelectorAll('#scheduleBody tr');
+
+        rows.forEach(row => {
+            const facilityCell = row.cells[0].textContent.toLowerCase();
+            if (filterValue === "" || facilityCell.includes(filterValue)) {
+                row.style.display = ""; // Show row
+            } else {
+                row.style.display = "none"; // Hide row
+            }
+        });
+    }
+
+    // Call the function to load the CSV file when the page loads
+    window.onload = loadCSVSchedule;
+</script>
+
+</body>
+</html>
