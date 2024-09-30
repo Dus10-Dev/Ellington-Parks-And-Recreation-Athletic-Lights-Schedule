@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Athletic Field Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+
+        .schedule-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Community Athletic Field Schedule</h1>
+</header>
+
+<div class="container">
+    <h2>Check the latest schedule for our athletic fields</h2>
+    <p>Upload the latest schedule as a CSV file, and it will be displayed below:</p>
+
+    <!-- Schedule Table -->
+    <table class="schedule-table" id="scheduleTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Field</th>
+                <th>Event</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody id="scheduleBody">
+            <!-- Dynamic schedule data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<footer>
+    <p>Want to update the schedule? Upload the latest CSV file to reflect the changes.</p>
+</footer>
+
+<!-- JavaScript to load CSV file -->
+<script>
+    // This function reads the CSV file and updates the schedule table
+    function loadCSVSchedule() {
+        fetch('schedule.csv')
+            .then(response => response.text())
+            .then(data => {
+                const scheduleBody = document.getElementById('scheduleBody');
+                scheduleBody.innerHTML = ''; // Clear existing rows
+
+                const rows = data.split('\\n').slice(1); // Split by new lines and skip the header row
+                rows.forEach(row => {
+                    if (row) {
+                        const cols = row.split(','); // Split by comma to get columns
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${cols[0]}</td><td>${cols[1]}</td><td>${cols[2]}</td><td>${cols[3]}</td><td>${cols[4]}</td>`;
+                        scheduleBody.appendChild(tr);
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading CSV file:', error));
+    }
+
+    // Call the function to load the CSV file when the page loads
+    window.onload = loadCSVSchedule;
+</script>
+
+</body>
+</html>
