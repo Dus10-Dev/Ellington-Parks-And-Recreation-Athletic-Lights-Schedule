@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellington Athletic Field Schedule</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .filter {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .filter select,
+        .filter input[type="date"] {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+
+        .schedule-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .schedule-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #lastUpdated {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #555;
+        }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        #error-message {
+            color: red;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ellington Athletic Field Schedule</h1>
+</header>
+
+<div class="container">
+    <div id="lastUpdated"></div>
+
+    <div class="filter">
+        <div>
+            <label for="facilityFilter">Filter by Facility:</label>
+            <select id="facilityFilter" onchange="filterSchedule()">
+                <option value="">All</option>
+                <option value="Ellington Pinney Fields">Ellington Pinney Fields</option>
+                <option value="Robert Tedford Memorial Park">Robert Tedford Memorial Park</option>
+            </select>
+        </div>
+        <div>
+            <label for="fieldFilter">Filter by Field:</label>
+            <select id="fieldFilter" onchange="filterSchedule()">
+                <option value="">All</option>
+                <option value="Pinney Field D">Pinney Field D</option>
+                <option value="Small Soccer Fields">Small Soccer Fields</option>
+                <option value="LLM2">LLM2</option>
+                <option value="Football Field">Football Field</option>
+                <option value="Lisa's Field">Lisa's Field</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="filter">
+        <div>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" onchange="filterSchedule()" />
+        </div>
+        <div>
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" onchange="filterSchedule()" />
+        </div>
+    </div>
+
+    <table class="schedule-table" id="scheduleTable">
+        <thead>
+            <tr>
+                <th>Facility</th>
+                <th>Field</th>
+                <th>Start Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody id="scheduleBody">
+            <!-- Dynamic schedule data will be inserted here -->
+        </tbody>
+    </table>
+
+    <p id="error-message"></p>
+</div>
+
+<footer>
+    <p>Want to update the schedule? Ensure the latest CSV file is uploaded.</p>
+</footer>
+
+<script>
+    const lastUpdatedDate = "9/30/2024"; // Update this date when the schedule is updated
+
+    function loadCSVSchedule() {
+        fetch('schedule.csv?v=' + new Date().getTime())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(data => {
+                const scheduleBody = document.getElementById('scheduleBody');
+                const errorMessage = document.getElementById('error-message');
+                scheduleBody.innerHTML = '';
+                errorMessage.innerHTML = '';
+
+                const rows = data.split('\n').slice(1);
+                if (rows.length === 0 || (rows.length === 1 && rows[0] === '')) {
+                    errorMessage.innerHTML = 'No schedule data found in the CSV file.';
+                    return;
+                }
+                rows.forEach(row => {
+                    if (row) {
+                        const cols = row.split(',');
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${cols[0]}</td><td>${cols[1]}</td><td>${formatDate(cols[2].trim())}</td><td>${cols[3]}</td><td>${cols[4]}</td>`;
+                        scheduleBody.appendChild(tr);
+                    }
+                });
+
+                // Sort the schedule by date after loading
+                sortSchedule();
+
+                document.getElementById('lastUpdated').innerText = 'Last Updated: ' + lastUpdatedDate;
+            })
+            .catch(error => {
+                console.error('Error loading CSV file:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.innerHTML = 'Error loading schedule: ' + error.message;
+            });
+    }
+
+    function formatDate(dateString) {
+        return dateString; // Already in correct format (MM/DD/YYYY)
+    }
+
+    function sortSchedule() {
+        const scheduleBody = document.getElementById('scheduleBody');
+        const rowsArray = Array.from(scheduleBody.querySelectorAll('tr'));
+        
+        rowsArray.sort((a, b) => {
+            const dateA = new Date(a.cells[2].textContent.trim());
+            const dateB = new Date(b.cells[2].textContent.trim());
+            return dateA - dateB; // Sort by date
+        });
+
+        // Append sorted rows back to the table
+        rowsArray.forEach(row => scheduleBody.appendChild(row));
+    }
+
+    function filterSchedule() {
+        const facilityFilterValue = document.getElementById('facilityFilter').value.toLowerCase();
+        const fieldFilterValue = document.getElementById('fieldFilter').value.toLowerCase();
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const rows = document.querySelectorAll('#scheduleBody tr');
+
+        rows.forEach(row => {
+            const facilityCell = row.cells[0].textContent.toLowerCase();
+            const fieldCell = row.cells[1].textContent.toLowerCase();
+            const dateCell = row.cells[2].textContent.trim(); // Start Date column
+
+            // Check if the dateCell is within the selected range
+            const isInRange = (!startDate || isDateInRange(dateCell, startDate, endDate));
+            
+            // Check if the facility matches the filter
+            const facilityMatches = (facilityFilterValue === "" || facilityCell.includes(facilityFilterValue));
+            const fieldMatches = (fieldFilterValue === "" || fieldCell.includes(fieldFilterValue));
+
+            // Show row if all conditions are met
+            if (isInRange && facilityMatches && fieldMatches) {
+                row.style.display = ""; // Show row
+            } else {
+                row.style.display = "none"; // Hide row
+            }
+        });
+    }
+
+    function isDateInRange(dateCell, startDate, endDate
