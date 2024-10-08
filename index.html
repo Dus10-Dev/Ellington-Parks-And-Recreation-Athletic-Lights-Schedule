@@ -12,7 +12,7 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
-            color: #343a40; /* Dark text for better visibility */
+            color: #343a40;
         }
         h1 {
             text-align: center;
@@ -29,19 +29,19 @@
         th {
             padding: 15px;
             text-align: center;
-            background-color: #1a1a2e; /* Dark header color */
-            color: black; /* Black text on dark background */
+            background-color: #1a1a2e;
+            color: black;
         }
         td {
             padding: 15px;
             text-align: center;
-            background-color: #f8f9fa; /* Light background for table rows */
-            color: #343a40; /* Dark text for better visibility */
+            background-color: #f8f9fa;
+            color: #343a40;
         }
         .footer {
             text-align: center;
             margin: 50px 0;
-            color: #6c757d; /* Dark gray for footer text */
+            color: #6c757d;
         }
         .filters {
             margin: 20px auto;
@@ -62,8 +62,8 @@
         }
         .filter-buttons button {
             padding: 10px 20px;
-            background-color: #1a1a2e; /* Dark button color */
-            color: white; /* White text on button */
+            background-color: #1a1a2e;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -75,7 +75,7 @@
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
-            color: #6c757d; /* Dark gray for last updated text */
+            color: #6c757d;
         }
     </style>
 </head>
@@ -109,6 +109,7 @@
                     <th>Facility</th>
                     <th>Field</th>
                     <th>Date</th>
+                    <th>Day</th> <!-- New Day column added -->
                     <th>Lights On</th>
                     <th>Lights Off</th>
                 </tr>
@@ -190,10 +191,13 @@
             let tableRows = '';
 
             sortedData.forEach(row => {
+                const eventDate = new Date(row.Date);
+                const dayOfWeek = eventDate.toLocaleDateString('en-US', { weekday: 'long' }); // Get day of the week
                 tableRows += `<tr>
                                 <td>${row.Facility}</td>
                                 <td>${row.Field}</td>
                                 <td>${row.Date}</td>
+                                <td>${dayOfWeek}</td> <!-- Day column populated -->
                                 <td>${formatTime(row['Lights On'], '12:01 AM')}</td>
                                 <td>${formatTime(row['Lights Off'], '11:59 PM')}</td>
                               </tr>`;
